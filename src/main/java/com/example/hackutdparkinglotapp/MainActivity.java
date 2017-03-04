@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.EditText;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUser;
@@ -27,21 +28,32 @@ public class MainActivity extends AppCompatActivity {
     SignInAuthenticationHandler signInAuthenticationHandler = new SignInAuthenticationHandler();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        Helper.init(getApplicationContext());
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.reg);
 
-        CognitoUserPool userPool = new CognitoUserPool(getApplicationContext(), "us-east-1:788ffad1-8e12-4157-b748-3786bf0ad3dc", "HackUTDParking", null, Regions.US_EAST_1);
+        EditText userNameTxt = (EditText) findViewById(R.id.userName);
+        String userName = userNameTxt.getText().toString();
 
-        CognitoUserAttributes userAttributes = new CognitoUserAttributes();
 
-        userAttributes.addAttribute("Name","value");
+        EditText passTxt = (EditText) findViewById(R.id.password);
+        String password = passTxt.getText().toString();
+
+
+        EditText emailTxt = (EditText) findViewById(R.id.email);
+        String email = emailTxt.getText().toString();
+
 
         showWaitDialog("Signing up...");
 
-        userPool.signUpInBackground("USER_NAME", "PASSWORD",userAttributes,null,registerSignUpHandler);
+        Helper.registerUser(userName, password, email, registerSignUpHandler);
+
+/*
 
         CognitoUser user = userPool.getUser("");
         user.getSession(signInAuthenticationHandler);
+*/
 
 
     }
