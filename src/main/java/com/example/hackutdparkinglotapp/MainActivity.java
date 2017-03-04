@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
@@ -19,7 +21,7 @@ import com.amazonaws.regions.Regions;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity  {
 
     private ProgressDialog waitDialog;
     private AlertDialog userDialog;
@@ -33,21 +35,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.reg);
 
-        EditText userNameTxt = (EditText) findViewById(R.id.userName);
-        String userName = userNameTxt.getText().toString();
+
+        Button button = (Button) findViewById(R.id.loginButton);
+        button.setOnClickListener(new ButtonListener());
 
 
-        EditText passTxt = (EditText) findViewById(R.id.password);
-        String password = passTxt.getText().toString();
 
-
-        EditText emailTxt = (EditText) findViewById(R.id.email);
-        String email = emailTxt.getText().toString();
-
-
-        showWaitDialog("Signing up...");
-
-        Helper.registerUser(userName, password, email, registerSignUpHandler);
 
 /*
 
@@ -147,5 +140,28 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("deliveryMed", cognitoUserCodeDeliveryDetails.getDeliveryMedium());
         intent.putExtra("attribute", cognitoUserCodeDeliveryDetails.getAttributeName());
         startActivityForResult(intent, 10)*/
+    }
+
+    public class ButtonListener implements View.OnClickListener
+    {
+
+        @Override
+        public void onClick(View v)
+        {
+            showWaitDialog("Signing up...");
+
+            EditText userNameTxt = (EditText) findViewById(R.id.userName);
+            String userName = userNameTxt.getText().toString();
+
+
+            EditText passTxt = (EditText) findViewById(R.id.password);
+            String password = passTxt.getText().toString();
+
+
+            EditText emailTxt = (EditText) findViewById(R.id.email);
+            String email = emailTxt.getText().toString();
+
+            Helper.registerUser(userName, password, email, registerSignUpHandler);
+        }
     }
 }
