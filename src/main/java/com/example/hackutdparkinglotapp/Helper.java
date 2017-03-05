@@ -43,8 +43,9 @@ public class Helper
         System.out.println(cognitoUserPool+" hiiiiiiiiiiiiiiiiiiiii" + ddb);
     }
 
+/*
 
-  /*  public static void createTable() {
+    public static void createTable() {
 
         List<AttributeDefinition> attributeDefinitionList = new ArrayList<>();
 
@@ -84,6 +85,7 @@ public class Helper
 */
 
 
+
     public static void registerUser(String userName, String password, String email, MainActivity.RegisterSignUpHandler registerSignUpHandler)
     {
         System.out.println("I am hereeeeeeeeee");
@@ -92,15 +94,23 @@ public class Helper
 
         cognitoUserPool.signUpInBackground(userName, password,userAttributes,null,registerSignUpHandler);
 
+
         System.out.println(cognitoUserPool.getUser().getUserId());
 
-        UserDetails userDetails = new UserDetails(userName,password,email);
+
+
+
+    }
+
+
+    public static void add(String uname, String password, String email)
+    {
+        System.out.println("saved");
+        UserDetails userDetails = new UserDetails(uname,password,email);
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
         mapper.save(userDetails);
-
-        System.out.println("saved");
-
         System.out.println("Hiiii Done");
+
     }
 
 
@@ -119,5 +129,9 @@ public class Helper
         }
 
         return  formattedString;
+    }
+
+    public static CognitoUserPool getPool() {
+        return cognitoUserPool;
     }
 }

@@ -45,7 +45,7 @@ public class UserDetails
         this.password = password;
     }
 
-    @DynamoDBAttribute(attributeName = "password")
+    @DynamoDBAttribute(attributeName = "emailId")
     public String getEmailId() {
         return emailId;
     }
