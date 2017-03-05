@@ -73,6 +73,9 @@ public class MainActivity extends AppCompatActivity  {
         @Override
         public void onFailure(Exception e) {
 
+            e.printStackTrace();
+            closeWaitDialog();
+            System.out.println("FAILEDDDDDDDDD");
         }
     }
 
