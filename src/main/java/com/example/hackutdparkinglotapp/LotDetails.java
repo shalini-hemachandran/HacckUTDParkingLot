@@ -20,4 +20,16 @@ public class LotDetails {
     public String get_lot_location(){
         return lot_location;
     }
+
+    public void setLot_id(String lot_id) {
+        this.lot_id = lot_id;
+    }
+
+    public void setLot_location(String lot_location) {
+        this.lot_location = lot_location;
+    }
+
+    public void setLot_Name(String lot_Name) {
+        this.lot_Name = lot_Name;
+    }
 }

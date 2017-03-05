@@ -22,4 +22,19 @@ public class Parking_Spot_Details {
     }
 
 
+    public void setLot_id(String lot_id) {
+        this.lot_id = lot_id;
+    }
+
+    public void setPark_id(String park_id) {
+        this.park_id = park_id;
+    }
+
+    public void setPark_coordinates(String park_coordinates) {
+        this.park_coordinates = park_coordinates;
+    }
+
+    public void setPark_space_name(String park_space_name) {
+        this.park_space_name = park_space_name;
+    }
 }
