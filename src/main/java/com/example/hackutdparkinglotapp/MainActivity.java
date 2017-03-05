@@ -3,12 +3,14 @@ package com.example.hackutdparkinglotapp;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.StrictMode;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUser;
@@ -25,11 +27,18 @@ public class MainActivity extends AppCompatActivity  {
 
     private ProgressDialog waitDialog;
     private AlertDialog userDialog;
-    String userName;
+    String uName;
+    String mail;
+    String pssword;
     RegisterSignUpHandler registerSignUpHandler = new RegisterSignUpHandler();
     SignInAuthenticationHandler signInAuthenticationHandler = new SignInAuthenticationHandler();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (android.os.Build.VERSION.SDK_INT > 9)
+        {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
 
         Helper.init(getApplicationContext());
         super.onCreate(savedInstanceState);
@@ -59,9 +68,11 @@ public class MainActivity extends AppCompatActivity  {
 
             closeWaitDialog();
             Boolean regState = b;
+            Helper.add(uName, pssword, mail);
+
             if (b) {
                 // User is already confirmed
-                showDialogMessage("Sign up successful!",userName+" has been Confirmed", true);
+                showDialogMessage("Sign up successful!",uName+" has been Confirmed", true);
             }
             else {
                 // User is not confirmed
@@ -73,9 +84,9 @@ public class MainActivity extends AppCompatActivity  {
         @Override
         public void onFailure(Exception e) {
 
-            e.printStackTrace();
             closeWaitDialog();
-            System.out.println("FAILEDDDDDDDDD");
+            showDialogMessage("Sign up failed",Helper.formatException(e),false);
+
         }
     }
 
@@ -88,11 +99,11 @@ public class MainActivity extends AppCompatActivity  {
                 try {
                     userDialog.dismiss();
                     if(exit) {
-                        exit(userName);
+                        exit(uName);
                     }
                 } catch (Exception e) {
                     if(exit) {
-                        exit(userName);
+                        exit(uName);
                     }
                 }
             }
@@ -136,13 +147,13 @@ public class MainActivity extends AppCompatActivity  {
     }
 
     private void confirmSignUp(CognitoUserCodeDeliveryDetails cognitoUserCodeDeliveryDetails) {
-       /* Intent intent = new Intent(this, SignUpConfirm.class);
+       Intent intent = new Intent(this, SignUpConfirm.class);
         intent.putExtra("source","signup");
-        intent.putExtra("name", usernameInput);
+        intent.putExtra("name", uName);
         intent.putExtra("destination", cognitoUserCodeDeliveryDetails.getDestination());
         intent.putExtra("deliveryMed", cognitoUserCodeDeliveryDetails.getDeliveryMedium());
         intent.putExtra("attribute", cognitoUserCodeDeliveryDetails.getAttributeName());
-        startActivityForResult(intent, 10)*/
+        startActivityForResult(intent, 10);
     }
 
     public class ButtonListener implements View.OnClickListener
@@ -151,19 +162,23 @@ public class MainActivity extends AppCompatActivity  {
         @Override
         public void onClick(View v)
         {
+
             showWaitDialog("Signing up...");
 
             EditText userNameTxt = (EditText) findViewById(R.id.userName);
             String userName = userNameTxt.getText().toString();
 
+            uName = userName;
 
             EditText passTxt = (EditText) findViewById(R.id.password);
             String password = passTxt.getText().toString();
 
+            pssword = password;
 
             EditText emailTxt = (EditText) findViewById(R.id.email);
             String email = emailTxt.getText().toString();
 
+            mail = email;
             Helper.registerUser(userName, password, email, registerSignUpHandler);
         }
     }
