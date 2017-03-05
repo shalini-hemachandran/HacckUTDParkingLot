@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoDevice;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserSession;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.AuthenticationContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.AuthenticationDetails;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.ChallengeContinuation;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.MultiFactorAuthenticationContinuation;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.AuthenticationHandler;
@@ -95,16 +96,21 @@ public class MainActivity extends AppCompatActivity  {
         @Override
         public void getAuthenticationDetails(AuthenticationContinuation authenticationContinuation, String UserId) {
 
+            closeWaitDialog();
+            getUserAuthentication(authenticationContinuation);
+            System.out.println("HIIIII GET AUTH DETAILS");
         }
 
         @Override
         public void getMFACode(MultiFactorAuthenticationContinuation continuation) {
 
+            System.out.println("HIIIII MFA CODE");
         }
 
         @Override
         public void authenticationChallenge(ChallengeContinuation continuation) {
 
+            System.out.println("HIIIII AUTHENTICATION CHALLENGE");
         }
 
         @Override
@@ -114,7 +120,26 @@ public class MainActivity extends AppCompatActivity  {
         }
     }
 
+    private void getUserAuthentication(AuthenticationContinuation authenticationContinuation) {
+        String username =  ((EditText) (findViewById(R.id.userName))).toString();
+        String password =  ((EditText) (findViewById(R.id.password))).toString();
+        if(password == null) {
+            ((EditText) (findViewById(R.id.userName))).setText(username);
+            password = ((EditText) findViewById(R.id.password)).getText().toString();
+            if(password == null) {
+                showDialogMessage("Password Required", "Password field cannot be empty", true);
+                return;
+            }
+
+        }
+        AuthenticationDetails authenticationDetails = new AuthenticationDetails(((EditText) (findViewById(R.id.userName))).toString(), password, null);
+        authenticationContinuation.setAuthenticationDetails(authenticationDetails);
+        authenticationContinuation.continueTask();
+    }
+
     private void openHomePage() {
+
+        System.out.println("TRYING TO OPEN HOME PAGE");
         Intent intent = new Intent(this, HomeScreenActivity.class);
         startActivityForResult(intent, 10);
 

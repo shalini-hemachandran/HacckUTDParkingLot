@@ -137,6 +137,7 @@ public class Helper
 
     public static void authenticateUser(String userName, String password, MainActivity.SignInAuthenticationHandler signInAuthenticationHandler) {
 
+        System.out.println("AUTHENTICATING USERRRRRRRRRRRRR");
         cognitoUserPool.getUser(userName).getSessionInBackground(signInAuthenticationHandler);
     }
 }
