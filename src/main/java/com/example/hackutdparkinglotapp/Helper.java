@@ -86,7 +86,7 @@ public class Helper
 
 
 
-    public static void registerUser(String userName, String password, String email, MainActivity.RegisterSignUpHandler registerSignUpHandler)
+    public static void registerUser(String userName, String password, String email, RegisterActivity.RegisterSignUpHandler registerSignUpHandler)
     {
         System.out.println("I am hereeeeeeeeee");
         CognitoUserAttributes userAttributes = new CognitoUserAttributes();
@@ -133,5 +133,10 @@ public class Helper
 
     public static CognitoUserPool getPool() {
         return cognitoUserPool;
+    }
+
+    public static void authenticateUser(String userName, String password, MainActivity.SignInAuthenticationHandler signInAuthenticationHandler) {
+
+        cognitoUserPool.getUser(userName).getSessionInBackground(signInAuthenticationHandler);
     }
 }

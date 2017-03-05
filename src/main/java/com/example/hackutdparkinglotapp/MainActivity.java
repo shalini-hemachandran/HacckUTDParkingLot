@@ -3,35 +3,27 @@ package com.example.hackutdparkinglotapp;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.amazonaws.auth.CognitoCachingCredentialsProvider;
-import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUser;
-import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserAttributes;
-import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserCodeDeliveryDetails;
-import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoDevice;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserSession;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.AuthenticationContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.ChallengeContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.MultiFactorAuthenticationContinuation;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.AuthenticationHandler;
-import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.SignUpHandler;
-import com.amazonaws.regions.Regions;
-
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity  {
 
+    SignInAuthenticationHandler signInAuthenticationHandler = new SignInAuthenticationHandler();
     private ProgressDialog waitDialog;
     private AlertDialog userDialog;
-    String uName;
-    String mail;
-    String pssword;
-    RegisterSignUpHandler registerSignUpHandler = new RegisterSignUpHandler();
-    SignInAuthenticationHandler signInAuthenticationHandler = new SignInAuthenticationHandler();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (android.os.Build.VERSION.SDK_INT > 9)
@@ -42,11 +34,22 @@ public class MainActivity extends AppCompatActivity  {
 
         Helper.init(getApplicationContext());
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.reg);
+        setContentView(R.layout.activity_main);
 
+        EditText userNameTxt = (EditText) findViewById(R.id.userName);
+        String userName = userNameTxt.getText().toString();
+
+
+
+        EditText passTxt = (EditText) findViewById(R.id.password);
+        String password = passTxt.getText().toString();
 
         Button button = (Button) findViewById(R.id.loginButton);
-        button.setOnClickListener(new ButtonListener());
+        button.setOnClickListener(new LoginButtonListener(userName, password));
+
+
+        Button regButton = (Button) findViewById(R.id.regButton);
+        regButton.setOnClickListener(new RegisterButtonListener());
 
 
 
@@ -60,32 +63,85 @@ public class MainActivity extends AppCompatActivity  {
 
     }
 
-    public class RegisterSignUpHandler implements SignUpHandler
-    {
-
+    private class RegisterButtonListener implements View.OnClickListener {
         @Override
-        public void onSuccess(CognitoUser cognitoUser, boolean b, CognitoUserCodeDeliveryDetails cognitoUserCodeDeliveryDetails) {
+        public void onClick(View v) {
 
-            closeWaitDialog();
-            Boolean regState = b;
-            Helper.add(uName, pssword, mail);
 
-            if (b) {
-                // User is already confirmed
-                showDialogMessage("Sign up successful!",uName+" has been Confirmed", true);
-            }
-            else {
-                // User is not confirmed
-                confirmSignUp(cognitoUserCodeDeliveryDetails);
-            }
+            callRegister();
+
+
+
+        }
+    }
+
+    private void callRegister() {
+        Intent intent = new Intent(this, RegisterActivity.class);
+        startActivityForResult(intent, 10);
+    }
+
+
+    public class SignInAuthenticationHandler implements AuthenticationHandler
+    {
+        @Override
+        public void onSuccess(CognitoUserSession userSession, CognitoDevice newDevice) {
+
+            openHomePage();
+
+
+
         }
 
+        @Override
+        public void getAuthenticationDetails(AuthenticationContinuation authenticationContinuation, String UserId) {
+
+        }
 
         @Override
-        public void onFailure(Exception e) {
+        public void getMFACode(MultiFactorAuthenticationContinuation continuation) {
 
+        }
+
+        @Override
+        public void authenticationChallenge(ChallengeContinuation continuation) {
+
+        }
+
+        @Override
+        public void onFailure(Exception exception) {
             closeWaitDialog();
-            showDialogMessage("Sign up failed",Helper.formatException(e),false);
+            showDialogMessage("Sign-in failed", Helper.formatException(exception), true);
+        }
+    }
+
+    private void openHomePage() {
+        Intent intent = new Intent(this, HomeScreenActivity.class);
+        startActivityForResult(intent, 10);
+
+    }
+
+    private void closeWaitDialog() {
+        try {
+            waitDialog.dismiss();
+        }
+        catch (Exception e) {
+            //
+        }
+    }
+    private class LoginButtonListener implements View.OnClickListener {
+        String userName;
+        String password;
+        public LoginButtonListener(String userName, String passTxt) {
+
+            this.userName = userName;
+            this.password = passTxt;
+        }
+
+        @Override
+        public void onClick(View v)
+        {
+
+            Helper.authenticateUser(userName, password, signInAuthenticationHandler);
 
         }
     }
@@ -99,33 +155,17 @@ public class MainActivity extends AppCompatActivity  {
                 try {
                     userDialog.dismiss();
                     if(exit) {
-                        exit(uName);
+                        exit("");
                     }
                 } catch (Exception e) {
                     if(exit) {
-                        exit(uName);
+                        exit("");
                     }
                 }
             }
         });
         userDialog = builder.create();
         userDialog.show();
-    }
-
-    private void showWaitDialog(String message) {
-        closeWaitDialog();
-        waitDialog = new ProgressDialog(this);
-        waitDialog.setTitle(message);
-        waitDialog.show();
-    }
-
-    private void closeWaitDialog() {
-        try {
-            waitDialog.dismiss();
-        }
-        catch (Exception e) {
-            //
-        }
     }
 
     private void exit(String uname) {
@@ -146,40 +186,5 @@ public class MainActivity extends AppCompatActivity  {
         finish();
     }
 
-    private void confirmSignUp(CognitoUserCodeDeliveryDetails cognitoUserCodeDeliveryDetails) {
-       Intent intent = new Intent(this, SignUpConfirm.class);
-        intent.putExtra("source","signup");
-        intent.putExtra("name", uName);
-        intent.putExtra("destination", cognitoUserCodeDeliveryDetails.getDestination());
-        intent.putExtra("deliveryMed", cognitoUserCodeDeliveryDetails.getDeliveryMedium());
-        intent.putExtra("attribute", cognitoUserCodeDeliveryDetails.getAttributeName());
-        startActivityForResult(intent, 10);
-    }
 
-    public class ButtonListener implements View.OnClickListener
-    {
-
-        @Override
-        public void onClick(View v)
-        {
-
-            showWaitDialog("Signing up...");
-
-            EditText userNameTxt = (EditText) findViewById(R.id.userName);
-            String userName = userNameTxt.getText().toString();
-
-            uName = userName;
-
-            EditText passTxt = (EditText) findViewById(R.id.password);
-            String password = passTxt.getText().toString();
-
-            pssword = password;
-
-            EditText emailTxt = (EditText) findViewById(R.id.email);
-            String email = emailTxt.getText().toString();
-
-            mail = email;
-            Helper.registerUser(userName, password, email, registerSignUpHandler);
-        }
-    }
 }
